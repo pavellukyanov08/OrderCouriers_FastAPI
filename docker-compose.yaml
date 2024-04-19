@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: fastapi_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: mysql+pymysql://courier_user:courier_password@db/courier_db
+    volumes:
+      - ./app:/fastapi_app/app
+    ports:
+      - "8000:8000"
+    restart: always
+    env_file:
+      - .env
+
+  db:
+    container_name: mysql_app
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: courier_root_password
+      MYSQL_DATABASE: courier_db
+      MYSQL_USER: courier_user
+      MYSQL_PASSWORD: courier_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
