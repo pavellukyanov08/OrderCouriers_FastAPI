@@ -1,48 +1,34 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Table
-from sqlalchemy.orm import relationship
-from database import Base
+from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, DateTime
 
+metadata = MetaData()
 
-class Courier(Base):
-    __tablename__ = "couriers"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100), nullable=False)
-    avg_order_complete_time = Column(DateTime)
-    avg_day_orders = Column(Integer)
+couriers = Table(
+    "couriers",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("name", String(100), nullable=False),
+    Column("avg_order_complete_time", DateTime),
+    Column("avg_day_orders", Integer),
 
     # Связь с заказами и районами
-    order = Column(ForeignKey("orders.id"), nullable=False)
+    Column("order_id", Integer, ForeignKey("orders.id"))
+)
 
+orders = Table(
+    "orders",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("name", String(100), nullable=False),
+    Column("status", Integer, default=1),
+)
 
-    def __repr__(self):
-        return f"Курьер: {self.name} ({self.id})"
+districts = Table(
+    "districts",
 
-
-class Order(Base):
-    __tablename__ = "orders"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), index=True, nullable=False)
-    status = Column(Integer, default=1)
-
-    # Связь с курьерами и районами
-    courier = relationship("Courier", back_populates="orders")
-    district = relationship("District", back_populates="orders")
-
-    def __repr__(self):
-        return (f"Заказ №: {self.id}, Наименование: {self.name}\n"
-                f"Курьер: {self.courier}, Имя: {self.name}")
-
-
-class District(Base):
-    __tablename__ = "districts"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), index=True, unique=True, nullable=False)
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("name", String(100), nullable=False),
 
     # Связи с курьерами и заказами
-    orders = Column(Integer, ForeignKey("orders.id"), nullable=False)
-
-    def __repr__(self):
-        return f"Район {self.name}, № {self.id}"
+    Column("order_id", Integer, ForeignKey("orders.id")),
+)
