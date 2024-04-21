@@ -1,9 +1,22 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, DateTime
+import datetime
+
+from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey, DateTime, TIMESTAMP
 
 metadata = MetaData()
 
-couriers = Table(
-    "couriers",
+
+
+order = Table(
+    "order",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("name", String(100), nullable=False),
+    Column("status", Integer, default=1),
+    Column("registered_at", TIMESTAMP, default=datetime.UTC)
+)
+
+courier = Table(
+    "courier",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("name", String(100), nullable=False),
@@ -11,16 +24,9 @@ couriers = Table(
     Column("avg_day_orders", Integer),
 
     # Связь с заказами и районами
-    Column("order_id", Integer, ForeignKey("orders.id"))
+    Column("order_id", Integer, ForeignKey(order.c.id))
 )
 
-orders = Table(
-    "orders",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("name", String(100), nullable=False),
-    Column("status", Integer, default=1),
-)
 
 districts = Table(
     "districts",
