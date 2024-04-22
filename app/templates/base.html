@@ -4,16 +4,21 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', path='css/base/base.css') }}">
-    <title>Сервис распределения заказов по курьерам</title>
+    {% block css %}
+        <link rel="stylesheet" href="{{ url_for('static', path='css/base/base.css') }}">
+    {% endblock %}
+
+    <title>{% block title %}Сервис распределения заказов по курьерам{% endblock %}</title>
 </head>
 <body>
     <header class="page-header">
         <div class="page-header__wrapper container">
             <nav class="site-nav">
                 <ul class="site-nav__list">
-                    <li><a href="#">Главная</a></li>
-                    <li><a href="#">Курьеры</a></li>
+                    <li><a href="/pages">Главная</a></li>
+                    <li><a href="/pages/registr_courier">Регистрация курьеров</a></li>
+                    <li><a href="/pages/registr_order">Добавление заказа</a></li>
+
                 </ul>
             </nav>
         </div>

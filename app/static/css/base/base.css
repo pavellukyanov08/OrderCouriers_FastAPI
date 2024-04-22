@@ -8,6 +8,10 @@ h1, h2, h3, p {
   padding: 0;
 }
 
+ul {
+  padding: 0;
+}
+
 body {
   padding: 0;
   font-weight: 400;
@@ -21,7 +25,7 @@ a {
 }
 
 .container {
-  max-width: 1220px;
+  max-width: 1300px;
   min-width: 320px;
   margin: 0 auto;
 }

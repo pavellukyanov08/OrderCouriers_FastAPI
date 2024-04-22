@@ -1,7 +1,24 @@
 {% extends 'base.html' %}
 
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', path='css/base/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/main_page/main_page.css') }}">
+{% endblock %}
+
+{% block title %} Регистрация курьера {% endblock %}
+
 {% block content %}
-    <section class="page-upper">
-        
+    <section class="courier-order__section container">
+        <h2 class="courier-order__header">Список курьеров и заказов</h2>
+
+        <div class="courier-order__block">
+            <ul>
+                {% for courier in couriers %}
+                    <li>{{ courier.id}}</li>
+                    <li>{{ courier.name}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
     </section>
 {% endblock %}
