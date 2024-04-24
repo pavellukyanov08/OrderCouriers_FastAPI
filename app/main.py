@@ -7,7 +7,7 @@ from starlette.staticfiles import StaticFiles
 
 # from .auth.auth import auth_backend, fastapi_users
 # from .auth.schemas import UserRead, UserCreate
-from .settings import STATIC_DIRECTORY
+# from .settings import STATIC_DIRECTORY
 from .pages.router import router as router_pages
 
 app = FastAPI(
@@ -40,5 +40,4 @@ app = FastAPI(
 
 
 app.include_router(router_pages)
-app.mount("/static", StaticFiles(directory=STATIC_DIRECTORY), name="static")
 
