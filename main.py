@@ -1,15 +1,14 @@
 import uvicorn
 from fastapi import FastAPI
-from app.core.config import settings
+from app.routes import courier
+from app.routes.courier import courier_route
 
 app = FastAPI(
     title="Сервис распределения заказов по курьерам"
 )
 
 
-@app.get("/")
-def main():
-    return {"DB_HOST": settings.DB_HOST, "SECRET_KEY": settings.SECRET_KEY}
+app.include_router(courier_route)
 
 
 if __name__ == '__main__':
