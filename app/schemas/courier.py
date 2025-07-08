@@ -1,13 +1,20 @@
+from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 
-class CourierBase(BaseModel):
+class CourierRegister(BaseModel):
     name: str
-    districts: list[str]
+    districts: List[str]
 
 
-class CourierCreate(CourierBase):
-    pass
+class CourierBase(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
 
 
 class CourierResponse(BaseModel):
@@ -16,6 +23,7 @@ class CourierResponse(BaseModel):
     districts: list[str]
 
 
-    class Config:
-        from_attributes=True
-
+class CourierDetail(CourierBase):
+    active_order: Optional[str]
+    avg_order_complete_time: Optional[datetime]
+    avg_day_orders: int

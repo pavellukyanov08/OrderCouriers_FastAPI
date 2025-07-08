@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import Optional
 
 
 class OrderCreate(BaseModel):
@@ -7,10 +7,11 @@ class OrderCreate(BaseModel):
     district: str
 
 
-class OrderCompleted(BaseModel):
-    id: int
-    status: int
+class OrderResult(BaseModel):
+    oder_id: int
     courier_id: int
 
-    class Config:
-        orm_mode = True
+
+class OrderStatus(BaseModel):
+    courier_id: int
+    status: str

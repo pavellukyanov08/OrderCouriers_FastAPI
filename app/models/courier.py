@@ -18,6 +18,8 @@ class Courier(Base):
 
     register_at = Column(DateTime, default=datetime.utcnow)
 
+    orders = relationship("Order", back_populates='courier')
+
     districts = relationship("District", secondary=courier_districts, back_populates="couriers")
 
     def __repr__(self):
