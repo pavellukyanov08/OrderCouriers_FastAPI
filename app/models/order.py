@@ -20,8 +20,6 @@ class Order(Base):
     courier_id = Column(Integer, ForeignKey('couriers.id'))
     courier = relationship('Courier', back_populates='orders')
 
-
-
     def __repr__(self):
         return f"Заказ №{self.id}, район {self.district}"
 

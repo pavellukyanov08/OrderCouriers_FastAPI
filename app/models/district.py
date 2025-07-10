@@ -13,7 +13,6 @@ class District(Base):
 
     couriers = relationship("Courier", secondary=courier_districts, back_populates="districts")
 
-
     def __repr__(self):
         return f"Район {self.name}"
 

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routes.courier import courier_route
+from app.api.routes.courier import courier_route
 
 
 def create_app():
