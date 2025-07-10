@@ -1,7 +1,7 @@
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy import Integer
 from app.core.database import Base
+
 
 courier_districts = Table(
     "courier_districts",
