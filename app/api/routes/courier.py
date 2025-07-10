@@ -1,16 +1,15 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
 from app import models
 from app.schemas.courier import CourierBase, CourierResponse
 from app.models.courier import Courier
-from app.core.database import get_db
+from app.core.database import get_session, AsyncSessionLocal, SyncSessionLocal
 
 courier_route = APIRouter()
 
 
 @courier_route.post('/courier', response_model=CourierBase)
-def add_courier(courier: CourierBase, db: Session = Depends(get_db)):
+def add_courier(courier: CourierBase, db: SyncSessionLocal = Depends(get_session)):
     try:
         new_courier = models.Courier(
             name=courier.name,
@@ -29,7 +28,7 @@ def add_courier(courier: CourierBase, db: Session = Depends(get_db)):
 
 
 @courier_route.get('/courier', response_model=list[CourierResponse])
-def get_courier(db: AsyncSession = Depends(get_db)):
+def get_courier(db: AsyncSessionLocal = Depends(get_session)):
     couriers = db.query(models.Courier).all()
     return couriers
 
