@@ -12,6 +12,7 @@ class District(Base):
     name = Column(String, unique=True, nullable=False)
 
     couriers = relationship("Courier", secondary=courier_districts, back_populates="districts")
+    orders = relationship('Order', back_populates='district')
 
     def __repr__(self):
         return f"Район {self.name}"

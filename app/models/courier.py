@@ -11,16 +11,18 @@ class Courier(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
-    district = Column(JSON, nullable=False)
-    active_order = Column(JSON, nullable=True)
+    active_order = Column(Integer, ForeignKey('orders.id'), nullable=True)
     avg_order_complete_time = Column(Float, default=0.0)
     avg_day_orders = Column(Integer, default=0)
 
     register_at = Column(DateTime, default=datetime.utcnow)
 
-    orders = relationship("Order", back_populates='courier')
-
-    districts = relationship("District", secondary=courier_districts, back_populates="couriers")
+    orders = relationship('Order', back_populates='courier', foreign_keys='Order.courier_id')
+    districts = relationship("District",
+                             secondary=courier_districts,
+                             back_populates="couriers",
+                             lazy='selectin'
+    )
 
     def __repr__(self):
         return f"Курьер {self.name}"

@@ -2,65 +2,68 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from typing import Optional
 
-from app import models
-from app.models import Order
-from app.schemas.courier import CourierBase, CourierResponse
+from sqlalchemy.orm import selectinload
+
+from app.models import Order, District, courier_districts
+from app.schemas.courier import CourierResponse, CourierRegister
 from app.models.courier import Courier
 from app.core.database import get_session, AsyncSessionLocal, SyncSessionLocal
 
-courier_route = APIRouter()
+router = APIRouter()
 
 
-@courier_route.post('/courier', response_model=CourierBase)
-def add_courier(courier: CourierBase, db: SyncSessionLocal = Depends(get_session)):
+@router.get('/couriers', response_model=CourierResponse)
+async def get_courier(courier: Optional[int] = None, db: AsyncSessionLocal = Depends(get_session)):
+    if courier is not None:
+        stmt = select(Courier).options(selectinload(Courier.districts)).where(Courier.id == courier)
+        result = await db.execute(stmt)
+        existing_courier = result.scalar_one_or_none()
+
+        if not existing_courier:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Курьер не найден')
+
+        return [courier]
+
+    else:
+        stmt = select(Courier).options(selectinload(Courier.districts))
+        result = await db.execute(stmt)
+        couriers = result.scalars().all()
+        return couriers
+
+
+@router.post('/couriers', response_model=CourierResponse)
+async def add_courier(courier: CourierRegister, db: AsyncSessionLocal = Depends(get_session)):
     try:
-        new_courier = models.Courier(
+        stmt = select(District).where(District.name.in_(courier.districts))
+        result = await db.execute(stmt)
+        districts = result.scalars().all()
+        print(districts)
+
+        if len(districts) != len(set(courier.districts)):
+            raise HTTPException(status_code=400, detail="Некоторые районы не найдены")
+
+        new_courier = Courier(
             name=courier.name,
-            district=','.join(courier.districts)
+            districts=districts,
         )
 
         db.add(new_courier)
-        db.commit()
-        db.refresh(new_courier)
+        await db.commit()
+        await db.refresh(new_courier)
 
-        return new_courier
+        stmt = (
+            select(Courier)
+            .options(selectinload(Courier.districts))
+            .where(Courier.id == new_courier.id)
+        )
+        result = await db.execute(stmt)
+        courier_with_districts = result.scalar_one()
+
+        return courier_with_districts
 
     except Exception as e:
         db.rollback()
         return f'Ошибка добавления {str(e)}'
 
 
-@courier_route.get('/courier', response_model=CourierResponse)
-async def get_courier(courier_id: Optional[int], db: AsyncSessionLocal = Depends(get_session)):
-    if courier_id:
-        stmt = (
-            select(
-                Courier,
-                Order
-            )
-            .join(Order, Courier.id == Order.courier_id)
-            .where(Courier.id == courier_id)
-            .group_by(Courier.id, Order.id)
-            .order_by(Courier.id)
-        )
-        result = await db.execute(stmt)
-        courier = result.scalar_one_or_none()
-
-        if not courier:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Курьер не найден')
-
-        couriers = courier
-
-    else:
-        stmt = select(Courier).all()
-        result = await db.execute(stmt)
-        couriers = result.scalars().all()
-
-    return [{
-        'id': courier.id,
-        'name': courier.name,
-        'active_order': {
-            'order_id': courier.active_order_id,
-            'order_name': courier.active_order_name,
-        },
-    } for courier in couriers]
+# @router.post('/couriers')

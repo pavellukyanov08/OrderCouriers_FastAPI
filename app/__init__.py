@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes.courier import courier_route
+from app.api.routes import district, courier, order
 
 
 def create_app():
@@ -11,6 +11,8 @@ def create_app():
     async def root():
         return {'message': 'Order courier service'}
 
-    app.include_router(courier_route)
+    app.include_router(district.router)
+    app.include_router(courier.router)
+    app.include_router(order.router)
 
     return app

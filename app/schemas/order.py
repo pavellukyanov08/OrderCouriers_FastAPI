@@ -1,5 +1,13 @@
 from pydantic import BaseModel
-from typing import Optional
+
+from app.schemas.district import DistrictBase
+
+
+class OrderBase(BaseModel):
+    name: str
+
+    class Config:
+        from_attributes = True
 
 
 class OrderCreate(BaseModel):
@@ -7,11 +15,12 @@ class OrderCreate(BaseModel):
     district: str
 
 
-class OrderResult(BaseModel):
-    oder_id: int
+class OrderCreateResponse(BaseModel):
+    order_id: int
     courier_id: int
 
 
-class OrderStatus(BaseModel):
+class OrderCompletedResponse(BaseModel):
+    order_id: int
     courier_id: int
-    status: str
+    status: int
