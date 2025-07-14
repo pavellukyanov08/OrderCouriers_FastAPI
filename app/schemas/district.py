@@ -1,10 +1,10 @@
-from typing import List
-
 from pydantic import BaseModel
 
 
 class DistrictBase(BaseModel):
+    id: int
     name: str
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        'from_attributes': True
+    }

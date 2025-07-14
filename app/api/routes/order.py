@@ -1,34 +1,41 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, and_
-from typing import Optional
+from typing import Optional, List
 
 from app.models import Order, District, Courier
 from app.models.order import OrderStatus
-from app.schemas.order import OrderCreate
+from app.schemas.order import OrderCreate, OrderResponse, OrderCreateResponse
 from app.core.database import get_session, AsyncSessionLocal
-from app.schemas.order import OrderResponse
 
 router = APIRouter()
 
 
-@router.get('/orders', response_model=OrderResponse)
+@router.get('/orders', response_model=List[OrderResponse])
 async def get_orders(order: Optional[int] = None, db: AsyncSessionLocal = Depends(get_session)):
     if order is not None:
         stmt = select(Order).where(Order.id == order)
         result = await db.execute(stmt)
-        existing_order = result.scalar().one_or_none()
+        existing_order = result.scalar_one_or_none()
 
         if not existing_order:
             raise HTTPException(status_code=404, detail="Заказ не найден")
 
-        return [order]
+        return [OrderResponse(
+            courier_id=existing_order.courier_id,
+            status=existing_order.status_id,
+            district=existing_order.district_id,
+        )]
 
     else:
         stmt = select(Order)
         result = await db.execute(stmt)
         orders = result.scalars().all()
 
-        return orders
+        return [OrderResponse(
+            courier_id=order.courier_id,
+            status=order.status_id,
+            district=order.district_id,
+        ) for order in orders]
 
 
 @router.post('/orders', response_model=OrderResponse)
@@ -69,7 +76,7 @@ async def add_order(order: OrderCreate, db: AsyncSessionLocal = Depends(get_sess
         await db.commit()
         await db.refresh(courier)
 
-        return OrderResponse(
+        return OrderCreateResponse(
             order_id=new_order.id,
             courier_id=courier.id
         )

@@ -4,24 +4,26 @@ from .district import DistrictBase
 from pydantic import BaseModel
 
 
+class CourierResponse(BaseModel):
+    id: Optional[int] = None
+    name: str
+    active_order: Optional[int] = None
+    avg_order_complete_time: Optional[float] = None
+    avg_day_orders: Optional[int] = None
+    districts: List[DistrictBase] = []
+
+    model_config = {
+        'from_attributes': True
+    }
+
+
 class CourierRegister(BaseModel):
     name: str
     districts: List[str]
 
 
-class CourierBase(BaseModel):
-    id: int
-    name: str
-
-    class Config:
-        from_attributes = True
-
-
-class CourierResponse(BaseModel):
+class CourierRegisterResponse(BaseModel):
     id: int
     name: str
     districts: List[DistrictBase]
-    active_order: Optional[str]
-    avg_order_complete_time: Optional[datetime]
-    avg_day_orders: int
 
