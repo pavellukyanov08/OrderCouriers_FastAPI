@@ -31,11 +31,11 @@ async def add_district(district: DistrictBase, db: AsyncSessionLocal = Depends(g
         return new_district
 
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         return f'Ошибка добавления {str(e)}'
 
 
-@router.get('/couriers', response_model=DistrictBase)
+@router.get('/districts', response_model=DistrictBase)
 async def get_districts(district: str, db: AsyncSessionLocal = Depends(get_session)):
     if district:
         stmt = select(District)

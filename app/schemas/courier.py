@@ -1,16 +1,16 @@
-from datetime import datetime
+from datetime import timedelta
 from typing import List, Optional
-from .district import DistrictBase
+from .district import DistrictResponse
 from pydantic import BaseModel
 
 
 class CourierResponse(BaseModel):
-    id: Optional[int] = None
+    id: int
     name: str
-    active_order: Optional[int] = None
-    avg_order_complete_time: Optional[float] = None
-    avg_day_orders: Optional[int] = None
-    districts: List[DistrictBase] = []
+    active_order: Optional[dict] = None
+    avg_order_complete_time: Optional[timedelta] = None
+    avg_day_orders: Optional[float] = None
+    districts: List[DistrictResponse]
 
     model_config = {
         'from_attributes': True
@@ -25,5 +25,5 @@ class CourierRegister(BaseModel):
 class CourierRegisterResponse(BaseModel):
     id: int
     name: str
-    districts: List[DistrictBase]
+    districts: List[DistrictResponse]
 

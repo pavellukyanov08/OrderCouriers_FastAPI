@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, JSON, Float, DateTime
+from annotated_types import Interval
+from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy.dialects.postgresql import JSONB, INTERVAL
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .associations import courier_districts
@@ -11,13 +13,13 @@ class Courier(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
-    active_order = Column(Integer, ForeignKey('orders.id'), nullable=True)
-    avg_order_complete_time = Column(Float, default=0.0)
-    avg_day_orders = Column(Integer, default=0)
+    active_order = Column(JSONB, nullable=True)
+    avg_order_complete_time = Column(INTERVAL, default=0.0)
+    avg_day_orders = Column(Float)
 
     register_at = Column(DateTime, default=datetime.utcnow)
 
-    orders = relationship('Order', back_populates='courier', foreign_keys='Order.courier_id')
+    orders = relationship('Order', back_populates='courier')
     districts = relationship("District",
                              secondary=courier_districts,
                              back_populates="couriers",

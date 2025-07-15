@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, and_
 from typing import Optional, List
@@ -6,6 +8,7 @@ from app.models import Order, District, Courier
 from app.models.order import OrderStatus
 from app.schemas.order import OrderCreate, OrderResponse, OrderCreateResponse
 from app.core.database import get_session, AsyncSessionLocal
+from app.utils.courier import get_courier_stats_by_orders
 
 router = APIRouter()
 
@@ -21,7 +24,8 @@ async def get_orders(order: Optional[int] = None, db: AsyncSessionLocal = Depend
             raise HTTPException(status_code=404, detail="Заказ не найден")
 
         return [OrderResponse(
-            courier_id=existing_order.courier_id,
+            name=existing_order.name,
+            courier=existing_order.courier_id,
             status=existing_order.status_id,
             district=existing_order.district_id,
         )]
@@ -32,7 +36,8 @@ async def get_orders(order: Optional[int] = None, db: AsyncSessionLocal = Depend
         orders = result.scalars().all()
 
         return [OrderResponse(
-            courier_id=order.courier_id,
+            name=order.name,
+            courier=order.courier_id,
             status=order.status_id,
             district=order.district_id,
         ) for order in orders]
@@ -70,7 +75,10 @@ async def add_order(order: OrderCreate, db: AsyncSessionLocal = Depends(get_sess
         await db.commit()
         await db.refresh(new_order)
 
-        courier.active_order = new_order.id
+        courier.active_order = {
+            'id': new_order.id,
+            'name': new_order.name
+        }
 
         db.add(courier)
         await db.commit()
@@ -78,11 +86,13 @@ async def add_order(order: OrderCreate, db: AsyncSessionLocal = Depends(get_sess
 
         return OrderCreateResponse(
             order_id=new_order.id,
-            courier_id=courier.id
+            courier_id=courier.id,
+            status=new_order.status_id,
+            district=district.id,
         )
 
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         return f'Ошибка добавления {str(e)}'
 
 
@@ -106,22 +116,30 @@ async def complete_order(order_id: int, db: AsyncSessionLocal = Depends(get_sess
         if not courier:
             raise HTTPException(status_code=404, detail="Курьер не найден")
 
-        if courier.active_order != order.id:
+        if courier.active_order is None or courier.active_order.get('id') != order.id:
             raise HTTPException(status_code=400, detail="Этот заказ не активен у курьера")
 
-        # Получаем статус "Завершен"
         result = await db.execute(select(OrderStatus).where(OrderStatus.name == 'Завершен'))
         order_status = result.scalar_one_or_none()
 
+        order.completed_time = datetime.utcnow()
         order.status_id = order_status.id
+
         courier.active_order = None
+
+        await get_courier_stats_by_orders(db, courier.id)
 
         await db.commit()
         await db.refresh(order)
 
-        return order
+        return OrderResponse(
+            name=order.name,
+            courier=order.courier_id,
+            status=order.status_id,
+            district=order.district_id,
+        )
 
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(status_code=500, detail=f"Ошибка завершения заказа: {str(e)}")
 

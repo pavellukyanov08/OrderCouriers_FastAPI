@@ -1,8 +1,5 @@
 from pydantic import BaseModel
 
-from app.models.order import OrderStatus
-from app.schemas.district import DistrictBase
-
 
 class OrderBase(BaseModel):
     name: str
@@ -17,7 +14,8 @@ class OrderCreate(BaseModel):
 
 
 class OrderResponse(BaseModel):
-    courier_id: int
+    name: str
+    courier: int
     status: int
     district: int
 
@@ -26,5 +24,11 @@ class OrderResponse(BaseModel):
 
 
 class OrderCreateResponse(BaseModel):
-    order_id: int
+    id: int
     courier_id: int
+    status: int
+    district: int
+
+    model_config = {
+        'from_attributes': True,
+    }

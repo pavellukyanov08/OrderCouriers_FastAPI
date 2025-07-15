@@ -4,10 +4,10 @@ from typing import Optional, List
 
 from sqlalchemy.orm import selectinload
 
-from app.models import Order, District, courier_districts
+from app.models import District
 from app.schemas.courier import CourierResponse, CourierRegister, CourierRegisterResponse
 from app.models.courier import Courier
-from app.core.database import get_session, AsyncSessionLocal, SyncSessionLocal
+from app.core.database import get_session, AsyncSessionLocal
 
 router = APIRouter()
 
@@ -25,7 +25,7 @@ async def get_courier(courier: Optional[int] = None, db: AsyncSessionLocal = Dep
         stmt = select(Courier).options(selectinload(Courier.districts))
         result = await db.execute(stmt)
         couriers = result.scalars().all()
-        return [CourierResponse.model_validate(c) for c in couriers]
+        return [CourierResponse.model_validate(courier) for courier in couriers]
 
 
 @router.post('/couriers', response_model=CourierRegisterResponse)
@@ -57,5 +57,5 @@ async def add_courier(courier: CourierRegister, db: AsyncSessionLocal = Depends(
         return courier_with_districts
 
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         return f'Ошибка добавления {str(e)}'
