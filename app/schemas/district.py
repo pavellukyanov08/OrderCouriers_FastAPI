@@ -1,18 +1,16 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
-class DistrictBase(BaseModel):
+class DistrictRead(BaseModel):
     id: int
-    name: str
+    name: Optional[str] = None
 
     model_config = {
         'from_attributes': True
     }
 
 
-class DistrictResponse(BaseModel):
+class DistrictCreate(BaseModel):
     name: str
-
-    model_config = {
-        'from_attributes': True
-    }

@@ -45,5 +45,7 @@ async def get_courier_stats_by_orders(db: AsyncSessionLocal, courier_id: int):
     avg_orders_query = select(func.avg(daily_count_subq.c.daily_count))
     avg_orders_result = await db.execute(avg_orders_query)
     avg_day_orders = avg_orders_result.scalar()
-    courier.avg_order_complete_time = timedelta(minutes=avg_order_complete_time)
+
+    # courier.avg_order_complete_time = timedelta(minutes=round(avg_order_complete_time.total_seconds() / 60))
+    courier.avg_order_complete_time = avg_order_complete_time
     courier.avg_day_orders = avg_day_orders

@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.post('/register', response_model=UserResponse)
 async def register(user: UserCreate, db: AsyncSessionLocal = Depends(get_session)):
-    # user = select(User).where(User.username == user.username)
+    user = select(User).where(User.username == user.username)
     result = await db.execute(user)
     existing_user = result.scalar_one_or_none()
 

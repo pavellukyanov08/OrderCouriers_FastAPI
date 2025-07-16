@@ -1,20 +1,32 @@
 from datetime import timedelta
 from typing import List, Optional
-from .district import DistrictResponse
-from pydantic import BaseModel
+from .district import DistrictRead
+from pydantic import BaseModel, ConfigDict
 
 
-class CourierResponse(BaseModel):
+def serialize_timedelta(td: timedelta) -> int:
+   return round(td.total_seconds() / 60)
+
+
+class CourierBase(BaseModel):
     id: int
     name: str
+
+    model_config = {'from_attributes': True}
+
+
+class CourierRead(CourierBase):
     active_order: Optional[dict] = None
     avg_order_complete_time: Optional[timedelta] = None
     avg_day_orders: Optional[float] = None
-    districts: List[DistrictResponse]
+    districts: List[DistrictRead]
 
-    model_config = {
-        'from_attributes': True
-    }
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders={
+            timedelta: serialize_timedelta,
+        }
+    )
 
 
 class CourierRegister(BaseModel):
@@ -25,5 +37,5 @@ class CourierRegister(BaseModel):
 class CourierRegisterResponse(BaseModel):
     id: int
     name: str
-    districts: List[DistrictResponse]
+    districts: List[DistrictRead]
 

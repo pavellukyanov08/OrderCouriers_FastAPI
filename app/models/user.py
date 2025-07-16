@@ -1,3 +1,4 @@
+from passlib.context import CryptContext
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from app.core.database import Base
 

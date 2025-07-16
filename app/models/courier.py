@@ -14,7 +14,7 @@ class Courier(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     active_order = Column(JSONB, nullable=True)
-    avg_order_complete_time = Column(INTERVAL, default=0.0)
+    avg_order_complete_time = Column(INTERVAL)
     avg_day_orders = Column(Float)
 
     register_at = Column(DateTime, default=datetime.utcnow)

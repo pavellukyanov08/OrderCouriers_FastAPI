@@ -1,11 +1,22 @@
 from pydantic import BaseModel
 
+from app.schemas.courier import CourierRead, CourierBase
 
-class OrderBase(BaseModel):
+
+class OrderRead(BaseModel):
+    id: int
     name: str
+    courier_id : int
+    status_id: int
+    district_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = {'from_attributes': True}
+
+
+class OrderWithCourier(OrderRead):
+    courier: CourierBase
+
+    model_config = {'from_attributes': True}
 
 
 class OrderCreate(BaseModel):
@@ -13,22 +24,5 @@ class OrderCreate(BaseModel):
     district: str
 
 
-class OrderResponse(BaseModel):
-    name: str
-    courier: int
-    status: int
-    district: int
-
-    class Config:
-        from_attributes = True
-
-
-class OrderCreateResponse(BaseModel):
-    id: int
-    courier_id: int
-    status: int
-    district: int
-
-    model_config = {
-        'from_attributes': True,
-    }
+class OrderCreateResponse(OrderRead):
+    courier: CourierBase

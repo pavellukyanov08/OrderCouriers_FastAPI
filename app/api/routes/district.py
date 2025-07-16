@@ -1,17 +1,18 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from starlette import status
 
 from app.models import District
-from app.schemas.district import DistrictBase
-from app.models.courier import Courier
-from app.core.database import get_session, AsyncSessionLocal, SyncSessionLocal
+from app.schemas.district import DistrictRead, DistrictCreate
+from app.core.database import get_session, AsyncSessionLocal
 
 router = APIRouter()
 
 
-@router.post('/districts', response_model=DistrictBase, status_code=201)
-async def add_district(district: DistrictBase, db: AsyncSessionLocal = Depends(get_session)):
+@router.post('/districts', response_model=DistrictRead, status_code=201)
+async def add_district(district: DistrictCreate, db: AsyncSessionLocal = Depends(get_session)):
     try:
         stmt = select(District).where(District.name == district.name)
         result = await db.execute(stmt)
@@ -35,28 +36,14 @@ async def add_district(district: DistrictBase, db: AsyncSessionLocal = Depends(g
         return f'Ошибка добавления {str(e)}'
 
 
-@router.get('/districts', response_model=DistrictBase)
-async def get_districts(district: str, db: AsyncSessionLocal = Depends(get_session)):
-    if district:
-        stmt = select(District)
-        result = await db.execute(stmt)
-        courier = result.scalar().all()
+@router.get('/districts', response_model=List[DistrictRead])
+async def get_districts(district: Optional[str] = None, db: AsyncSessionLocal = Depends(get_session)):
+    stmt = select(District)
 
-        if not courier:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Курьер не найден')
+    if district is not None:
+        stmt = stmt.where(District.name == district)
 
-        couriers = [courier]
+    result = await db.execute(stmt)
+    districts = result.scalars().all()
 
-    else:
-        stmt = select(Courier)
-        result = await db.execute(stmt)
-        couriers = result.scalars().all()
-
-    return [{
-        'id': courier.id,
-        'name': courier.name,
-        'active_order': {
-            'order_id': courier.active_order_id,
-            'order_name': courier.active_order_name,
-        },
-    } for courier in couriers]
+    return [DistrictRead.model_validate(district) for district in districts]

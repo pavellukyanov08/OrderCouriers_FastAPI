@@ -5,27 +5,27 @@ from typing import Optional, List
 from sqlalchemy.orm import selectinload
 
 from app.models import District
-from app.schemas.courier import CourierResponse, CourierRegister, CourierRegisterResponse
+from app.schemas.courier import CourierRegister, CourierRead, CourierRegisterResponse
 from app.models.courier import Courier
 from app.core.database import get_session, AsyncSessionLocal
 
 router = APIRouter()
 
 
-@router.get('/couriers', response_model=List[CourierResponse])
+@router.get('/couriers', response_model=List[CourierRead])
 async def get_courier(courier: Optional[int] = None, db: AsyncSessionLocal = Depends(get_session)):
+    stmt = select(Courier).options(selectinload(Courier.districts))
+
     if courier is not None:
-        stmt = select(Courier).options(selectinload(Courier.districts)).where(Courier.id == courier)
-        result = await db.execute(stmt)
-        existing_courier = result.scalar_one_or_none()
-        if not existing_courier:
-            raise HTTPException(status_code=404, detail='Курьер не найден')
-        return [CourierResponse.model_validate(existing_courier)]
-    else:
-        stmt = select(Courier).options(selectinload(Courier.districts))
-        result = await db.execute(stmt)
-        couriers = result.scalars().all()
-        return [CourierResponse.model_validate(courier) for courier in couriers]
+        stmt = stmt.where(Courier.id == courier)
+
+    result = await db.execute(stmt)
+    couriers = result.scalars().all()
+
+    if not couriers:
+        raise HTTPException(status_code=404, detail='Курьер не найден')
+
+    return [CourierRead.model_validate(courier) for courier in couriers]
 
 
 @router.post('/couriers', response_model=CourierRegisterResponse)
@@ -34,7 +34,6 @@ async def add_courier(courier: CourierRegister, db: AsyncSessionLocal = Depends(
         stmt = select(District).where(District.name.in_(courier.districts))
         result = await db.execute(stmt)
         districts = result.scalars().all()
-        print(districts)
 
         if len(districts) != len(set(courier.districts)):
             raise HTTPException(status_code=400, detail="Некоторые районы не найдены")
