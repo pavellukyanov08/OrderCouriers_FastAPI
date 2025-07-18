@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes import district, courier, order
+from app.api.routes import district, courier, order, user
 
 
 def create_app():
@@ -14,5 +14,6 @@ def create_app():
     app.include_router(district.router)
     app.include_router(courier.router)
     app.include_router(order.router)
+    app.include_router(user.router)
 
     return app

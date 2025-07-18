@@ -9,8 +9,8 @@ from app.schemas.courier import CourierRegister, CourierRead, CourierRegisterRes
 from app.models.courier import Courier
 from app.core.database import get_session, AsyncSessionLocal
 
-router = APIRouter()
 
+router = APIRouter()
 
 @router.get('/couriers', response_model=List[CourierRead])
 async def get_courier(courier: Optional[int] = None, db: AsyncSessionLocal = Depends(get_session)):
